@@ -5,6 +5,7 @@ output "main_vpc" {
 output "main_vpc_cidr" {
   value = "${aws_vpc.main.cidr_block}"
 }
+
 output "public_subnets" {
   value = "${
     map(
@@ -23,10 +24,10 @@ output "private_subnets" {
   }"
 }
 
-output "remote_access_security_group"{
+output "remote_access_security_group" {
   value = "${aws_security_group.remote_access.id}"
 }
 
-output "open_internal_access_security_group"{
+output "open_internal_access_security_group" {
   value = "${aws_security_group.open_internal.id}"
 }

@@ -13,16 +13,9 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
-#agent package specifications
-data "aws_s3_bucket_object" "default_agent_manifest" {
-  bucket = "${var.state_bucket}"
-  key = "${var.environment_name}/vpc/default_base_manifest.txt"
-}
-
 data "template_file" "userdatascript" {
   template = "${file("${path.module}/conf/userdatascriptbase.ps1")}"
   vars {
-    default_pacakge_manifest = "${data.aws_s3_bucket_object.default_agent_manifest.body}"
     injected_content = "${var.user_data_script_extension}"
   }
 }

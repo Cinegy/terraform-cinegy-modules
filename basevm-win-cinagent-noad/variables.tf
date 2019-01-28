@@ -82,7 +82,7 @@ variable "shared_route53_zone_suffix" {
 }
 
 variable "user_data_script_extension" {
-  description = "Extended element to attach to core user data script. Default installs Cinegy Agent with base elements and renames host to match metadata name tag."
+  description = "Extended element to attach to core user data script. Default renames host to match metadata name tag."
   default = <<EOF
   RenameHost
 EOF
