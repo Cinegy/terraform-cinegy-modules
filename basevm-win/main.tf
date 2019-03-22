@@ -1,15 +1,24 @@
 terraform {
   # The configuration for this backend will be filled in by Terragrunt
   backend "s3" {}
-  required_version = ">= 0.11.11"
+  required_version = ">= 0.11.10"
 }
 
 data "terraform_remote_state" "vpc" {
   backend = "s3"
   config {
-    bucket = "${var.state_bucket}"
+    bucket = "${var.global_state_bucket}"
     region = "${var.state_region}"
     key = "${var.environment_name}/vpc/terraform.tfstate"
+  }
+}
+
+data "terraform_remote_state" "directoryservice" {
+  backend = "s3"
+  config {
+    bucket = "${var.global_state_bucket}"
+    region = "${var.state_region}"
+    key = "${var.environment_name}/directoryservice/terraform.tfstate"
   }
 }
 
@@ -22,7 +31,7 @@ data "template_file" "userdatascript" {
 
 provider "aws" {
   region     = "${var.aws_region}"
-  version = "~> 1.56"
+  version = "~> 1.50"
 }
 
 # Get any secrets needed for VM instancing
@@ -34,6 +43,14 @@ data "aws_secretsmanager_secret_version" "privatekey" {
   secret_id = "${data.aws_secretsmanager_secret.privatekey.id}"
 }
 
+data "aws_secretsmanager_secret" "domain_admin_password" {
+  arn = "${var.aws_secrets_domain_admin_password_arn}"
+}
+
+data "aws_secretsmanager_secret_version" "domain_admin_password" {
+  secret_id = "${data.aws_secretsmanager_secret.domain_admin_password.id}"
+}
+
 data "aws_subnet_ids" "filtered_subnets" {
   vpc_id = "${data.terraform_remote_state.vpc.main_vpc}"
 
@@ -42,6 +59,32 @@ data "aws_subnet_ids" "filtered_subnets" {
     AZ = "${var.aws_subnet_az}"
   }
 }
+
+resource "aws_ssm_association" "domain_ssm" {
+	name = "${data.terraform_remote_state.directoryservice.directory_service_default_doc_name}"
+	instance_id = "${aws_instance.vm.id}"
+}
+
+data "aws_ami" "latest_windows" {
+most_recent = true
+owners = ["801119661308"] #amazon
+
+  filter {
+      name   = "name"
+      values = ["${var.amazon_owned_ami_name}"]
+  }
+
+  filter {
+      name   = "virtualization-type"
+      values = ["hvm"]
+  }
+
+  filter {
+      name   = "root-device-type"
+      values = ["ebs"]
+  }
+}
+
 
 resource "aws_ebs_volume" "data_volume" {
   availability_zone = "${var.aws_region}${lower(var.aws_subnet_az)}"
@@ -75,9 +118,10 @@ resource "aws_network_interface_sg_attachment" "open_access" {
 }
 
 resource "aws_instance" "vm" {
-  ami = "${lookup(var.aws_amis, var.aws_region)}"
+  ami = "${data.aws_ami.latest_windows.id}"
   key_name = "terraform-key-${var.environment_name}"
   instance_type = "${var.instance_type}"
+  iam_instance_profile = "${data.terraform_remote_state.directoryservice.instance_profile_domain_join_name}"
   subnet_id     = "${element(data.aws_subnet_ids.filtered_subnets.ids, count.index)}"
   get_password_data = true
   user_data = "${format("<powershell>%s</powershell>", data.template_file.userdatascript.rendered)}"
