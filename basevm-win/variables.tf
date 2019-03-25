@@ -12,10 +12,6 @@ variable "state_region" {
   default = "eu-west-1"
 }
 
-variable "global_state_bucket" {
-  description = "Name of bucket used to hold state for the global deployment."
-}
-
 variable "aws_region" {
   description = "AWS region to launch infrastructure within."
 }

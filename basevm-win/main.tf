@@ -7,7 +7,7 @@ terraform {
 data "terraform_remote_state" "vpc" {
   backend = "s3"
   config {
-    bucket = "${var.global_state_bucket}"
+    bucket = "${var.state_bucket}"
     region = "${var.state_region}"
     key = "${var.environment_name}/vpc/terraform.tfstate"
   }
@@ -16,7 +16,7 @@ data "terraform_remote_state" "vpc" {
 data "terraform_remote_state" "directoryservice" {
   backend = "s3"
   config {
-    bucket = "${var.global_state_bucket}"
+    bucket = "${var.state_bucket}"
     region = "${var.state_region}"
     key = "${var.environment_name}/directoryservice/terraform.tfstate"
   }
