@@ -16,6 +16,10 @@ variable "environment_name" {
   description = "Name to used to label environment deployment, for example 'dev' or 'test-lk'."
 }
 
+variable "app_name" {
+  description = "Name for labelling the deployment, for example 'sysadmin' or 'playout'"
+}
+
 # Module specific variables
 variable "aws_secrets_privatekey_arn" {
   description = "ARN representing private key secret stored within AWS Secrets Manager"

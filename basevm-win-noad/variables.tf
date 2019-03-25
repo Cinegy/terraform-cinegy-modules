@@ -16,6 +16,10 @@ variable "aws_region" {
   description = "AWS region to launch infrastructure within."
 }
 
+variable "app_name" {
+  description = "Name for labelling the deployment, for example 'sysadmin' or 'playout'"
+}
+
 # Module specific variables
 
 variable "amazon_owned_ami_name" {
