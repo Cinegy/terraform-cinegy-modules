@@ -22,7 +22,7 @@ data "template_file" "userdatascript" {
 
 provider "aws" {
   region     = "${var.aws_region}"
-  version = "~> 1.50"
+  version = "~> 2.3"
 }
 
 # Get any secrets needed for VM instancing

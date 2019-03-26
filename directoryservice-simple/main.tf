@@ -15,7 +15,7 @@ data "terraform_remote_state" "vpc" {
 
 provider "aws" {
   region     = "${var.aws_region}"
-  version = "~> 1.59"
+  version = "~> 2.3"
 }
 
 # Get any secrets needed for VM instancing

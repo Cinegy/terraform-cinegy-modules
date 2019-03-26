@@ -6,7 +6,7 @@ terraform {
 
 provider "aws" {
   region     = "${var.aws_region}"
-  version = "~> 1.56"
+  version = "~> 2.3"
 }
 
 # Create a VPC to launch our instances into

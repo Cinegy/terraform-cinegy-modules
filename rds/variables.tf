@@ -3,6 +3,10 @@ variable "environment_name" {
   description = "Name to used to label environment deployment, for example 'dev' or 'test-lk'."
 }
 
+variable "app_name" {
+  description = "Name for labelling the deployment, for example 'sysadmin' or 'playout'"
+}
+
 variable "state_bucket" {
   description = "Name of bucket used to hold state."
 }
@@ -26,7 +30,7 @@ variable "domain_name" {
   description = "Active Directory Domain Name"
 }
 
-variable "aws_subnet_tier"{
+variable "aws_subnet_tier" {
   description = "Tier of subnet for deployment (Private / Public)"
 }
 
@@ -34,7 +38,7 @@ variable "aws_subnet_az" {
   description = "Availability Zone for deployment (A/B/...)"
 }
 
-variable "rds_instance_class"{
+variable "rds_instance_class" {
   description = "Required instance class for RDS server"
   default = "db.t2.micro"
 }
@@ -79,10 +83,11 @@ variable "mssql_admin_username" {
   default = "sa"
 }
 
-variable "mssql_admin_password" {
-  description = "Password for the administrator DB user"
-}
-
 variable "rds_instance_name_prefix" {
   description = "Prefix value to use when naming created RDS instance (e.g. CINARC1)"
+}
+
+variable "aws_secrets_generic_account_password_arn" {
+  description = "ARN representing a key / value set of generic account names and passwords secrets stored within AWS Secrets Manager"
+  default = ""
 }

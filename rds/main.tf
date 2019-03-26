@@ -24,7 +24,7 @@ data "terraform_remote_state" "directoryservice" {
 
 provider "aws" {
   region     = "${var.aws_region}"
-  version = "~> 1.50"
+  version = "~> 2.3"
 }
 
 data "aws_subnet_ids" "filtered_subnets" {
@@ -36,6 +36,14 @@ data "aws_subnet_ids" "filtered_subnets" {
   }
 }
 
+data "aws_secretsmanager_secret" "sa_password" {
+  arn = "${var.aws_secrets_generic_account_password_arn}"
+}
+
+data "aws_secretsmanager_secret_version" "sa_password" {
+  secret_id = "${data.aws_secretsmanager_secret.sa_password.id}"
+}
+
 resource "aws_db_subnet_group" "mssql" {
   description = "The ${var.environment_name} RDS ${var.rds_instance_name_prefix} instance private subnet group."
   subnet_ids  = ["${data.aws_subnet_ids.filtered_subnets.ids}"]
@@ -43,6 +51,7 @@ resource "aws_db_subnet_group" "mssql" {
   tags {
     Name        = "RDS-${var.rds_instance_name_prefix}-subnet-group-${var.environment_name}"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -61,6 +70,7 @@ resource "aws_security_group" "rds_mssql_security_group" {
 
   tags {
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -201,7 +211,7 @@ resource "aws_db_instance" "mssql" {
   instance_class = "${var.rds_instance_class}"
   multi_az = "${var.rds_multi_az}"
   username = "${var.mssql_admin_username}"
-  password = "${var.mssql_admin_password}"
+  password = "${data.aws_secretsmanager_secret_version.sa_password}"
   vpc_security_group_ids = ["${aws_security_group.rds_mssql_security_group.id}","${element(data.aws_security_groups.filtered_domain_controller_group.ids, count.index)}"]
   db_subnet_group_name = "${aws_db_subnet_group.mssql.id}"
   backup_retention_period = 3
@@ -215,6 +225,7 @@ resource "aws_db_instance" "mssql" {
   
   tags {
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }

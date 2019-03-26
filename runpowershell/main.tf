@@ -24,7 +24,7 @@ data "terraform_remote_state" "directoryservice" {
 
 provider "aws" {
   region     = "${var.aws_region}"
-  version = "~> 1.50"
+  version = "~> 2.3"
 }
 
 

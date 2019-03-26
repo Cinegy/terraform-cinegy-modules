@@ -13,5 +13,5 @@ output "instance_local_administrator_password" {
 }
 
 output "dns_address" {
-  value = "${aws_route53_record.vm.fqdn}"
+  value = "${aws_route53_record.vm.*.fqdn}"
 }

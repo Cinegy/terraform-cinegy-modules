@@ -1,12 +1,12 @@
 terraform {
   # The configuration for this backend will be filled in by Terragrunt
   backend "s3" {}
-  required_version = ">= 0.11.10"
+  required_version = ">= 0.11.11"
 }
 
 provider "aws" {
   region     = "${var.aws_region}"
-  version = "~> 1.50"
+  version = "~> 2.3"
 }
 
 resource "aws_iam_user" "terragrunt_ro" {
@@ -87,7 +87,8 @@ data "aws_iam_policy_document" "terragrunt_core_operations" {
     actions = [
       "dynamodb:GetItem",
       "dynamodb:PutItem",
-      "dynamodb:DeleteItem"
+      "dynamodb:DeleteItem",
+      "dynamodb:DescribeTable"
     ]
 
     resources = [ "arn:aws:dynamodb:${var.aws_region}:${var.aws_account_id}:table/${var.dynamodb_table}" ]
@@ -111,91 +112,77 @@ data "aws_iam_policy_document" "terragrunt_core_operations" {
 }
 
 resource "aws_iam_policy" "terragrunt_core_operations" {
-  name = "TerragruntCoreS3andDDBOperations"
+  name = "TerragruntCoreS3andDDBOperations-${var.app_name}-${var.environment_name}"
   policy = "${data.aws_iam_policy_document.terragrunt_core_operations.json}"
 }
 
+//General RO access without resource restriction to AWS services, added as required during TF/TG roll-out
+data "aws_iam_policy_document" "terragrunt_ro_operations" {
+  statement {
+    actions = [ 
+      "ec2:Describe*",
+      "s3:Get*",
+      "s3:List*",
+      "iam:Get*",
+      "iam:List*",
+      "ds:Check*",
+      "ds:Describe*",
+      "ds:Get*",
+      "ds:List*",
+      "ds:Verify*",
+      "sns:List*",
+      "sns:Get*",
+      "organizations:Describe*",
+      "organizations:List*",
+      "ssm:Describe*",
+      "ssm:Get*",
+      "ssm:List*",
+      "route53:Get*",
+      "route53:List*",
+      "route53:TestDNSAnswer",
+      "dynamodb:BatchGet*",
+      "dynamodb:Describe*",
+      "dynamodb:Get*",
+      "dynamodb:List*",
+      "dynamodb:Query",
+      "dynamodb:Scan"
+     ]
+    resources = [ "*" ]
+  }
+}
+
 resource "aws_iam_policy" "terragrunt_ro_operations" {
-  name = "TerragruntReadOnlyOperations"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "ec2:Describe*",
-        "s3:Get*",
-        "s3:List*",
-        "application-autoscaling:DescribeScalableTargets",
-        "application-autoscaling:DescribeScalingActivities",
-        "application-autoscaling:DescribeScalingPolicies",
-        "cloudwatch:DescribeAlarmHistory",
-        "cloudwatch:DescribeAlarms",
-        "cloudwatch:DescribeAlarmsForMetric",
-        "cloudwatch:GetMetricStatistics",
-        "cloudwatch:ListMetrics",
-        "datapipeline:DescribeObjects",
-        "datapipeline:DescribePipelines",
-        "datapipeline:GetPipelineDefinition",
-        "datapipeline:ListPipelines",
-        "datapipeline:QueryObjects",
-        "dynamodb:BatchGetItem",
-        "dynamodb:DescribeTable",
-        "dynamodb:GetItem",
-        "dynamodb:ListTables",
-        "dynamodb:Query",
-        "dynamodb:Scan",
-        "dynamodb:DescribeReservedCapacity",
-        "dynamodb:DescribeReservedCapacityOfferings",
-        "dynamodb:ListTagsOfResource",
-        "dynamodb:DescribeTimeToLive",
-        "dynamodb:DescribeLimits",
-        "dynamodb:ListGlobalTables",
-        "dynamodb:DescribeGlobalTable",
-        "dynamodb:DescribeBackup",
-        "dynamodb:ListBackups",
-        "dynamodb:DescribeContinuousBackups",
-        "dax:Describe*",
-        "dax:List*",
-        "dax:GetItem",
-        "dax:BatchGetItem",
-        "dax:Query",
-        "dax:Scan",
-        "ec2:DescribeVpcs",
-        "ec2:DescribeSubnets",
-        "ec2:DescribeSecurityGroups",
-        "iam:GetRole",
-        "iam:ListRoles",
-        "sns:ListSubscriptionsByTopic",
-        "sns:ListTopics",
-        "lambda:ListFunctions",
-        "lambda:ListEventSourceMappings",
-        "lambda:GetFunctionConfiguration"
-      ],
-      "Effect": "Allow",
-      "Resource": "*"
-    }
-  ]
-}
-EOF
+  name = "TerragruntReadOnlyOperations-${var.app_name}-${var.environment_name}"
+  policy = "${data.aws_iam_policy_document.terragrunt_ro_operations.json}"
 }
 
+
+//General RW / admin access without resource restriction to AWS services, added as required during TF/TG roll-out
 data "aws_iam_policy_document" "terragrunt_admin_operations" {
   statement {
-    actions = [ "s3:*" ]
+    actions = [ 
+      "ec2:*",
+      "s3:*",
+      "iam:*",
+      "ds:*",
+      "sns:*",
+      "organizations:*",
+      "ssm:*",
+      "route53:*",
+      "dynamodb:*",
+      "secretsmanager:*"
+      ]
     resources = [ "*" ]
   }
 }
 
 resource "aws_iam_policy" "terragrunt_admin_operations" {
-  name = "TerragruntAdminOperations"
+  name = "TerragruntAdminOperations-${var.app_name}-${var.environment_name}"
   policy = "${data.aws_iam_policy_document.terragrunt_admin_operations.json}"
 }
 
-
 resource "aws_iam_role" "iam_role_domain_join" {
-  name = "IAM_ROLE_DOMAIN_JOIN-${var.environment_name}"
+  name = "IAM_ROLE_DOMAIN_JOIN-${var.app_name}-${var.environment_name}"
   path = "/"
 
   assume_role_policy = <<EOF
@@ -216,12 +203,12 @@ EOF
 }
 
 resource "aws_iam_instance_profile" "instance_profile_domain_join" {
-  name  = "INSTANCE_PROFILE_DOMAIN_JOIN-${var.environment_name}"
+  name  = "INSTANCE_PROFILE_DOMAIN_JOIN-${var.app_name}-${var.environment_name}"
   role = "${aws_iam_role.iam_role_domain_join.name}"
 }
 
 resource "aws_iam_role_policy" "policy_allow_all_ssm" {
-  name = "IAM_POLICY_ALLOW_ALL_SSM-${var.environment_name}"
+  name = "IAM_POLICY_ALLOW_ALL_SSM-${var.app_name}-${var.environment_name}"
   role = "${aws_iam_role.iam_role_domain_join.id}"
   policy = <<EOF
 {
