@@ -1,6 +1,6 @@
-# Directory Services
+# Base IAM Roles & Policies
 
-We use a small MS AD, since it's cheaper and we don't have a heavy loading on the domain.
+Bootstrapping IAM
 
 ## Notes
 

@@ -110,6 +110,7 @@ resource "aws_directory_service_directory" "ad" {
   tags {
     Name = "${upper(var.environment_name)}-Directory Service"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -140,8 +141,9 @@ resource "aws_ssm_document" "directory_service_default_doc" {
 
 
     tags {
-        Env = "${var.environment_name}"
-        Terraform = true
+      Env = "${var.environment_name}"
+      App = "${var.app_name}"
+      Terraform = true
     }
 
 	depends_on = ["aws_directory_service_directory.ad"]

@@ -20,20 +20,25 @@ variable "app_name" {
   description = "Name for labelling the deployment, for example 'sysadmin' or 'playout'"
 }
 
-# Module specific variables
-variable "domain_name" {
-  description = "Active Directory Domain Name"
+variable "aws_account_id" {
+  description = "Account ID for the AWS account related to the executing user"
 }
 
-variable "domain_default_computer_ou" {
-  description = "Default OU for new computer account creation"
+variable "dynamodb_table" {
+  description = "DynamoDB table used for controlling terragrunt locks"
+}
+
+variable "aws_secrets_privatekey_arn" {
+  description = "ARN representing private PEM key secret stored within AWS Secrets Manager"
+}
+
+variable "aws_secrets_generic_account_password_arn" {
+  description = "ARN representing generic admin account password key secret stored within AWS Secrets Manager"
 }
 
 variable "aws_secrets_domain_admin_password_arn" {
   description = "ARN representing domain admin password key secret stored within AWS Secrets Manager"
 }
 
-variable "directory_edition" {
-  description = "Directory edition to instance, applies only to MS AD instances (default Standard)"
-  default = "Standard"
-}
+
+# Module specific variables

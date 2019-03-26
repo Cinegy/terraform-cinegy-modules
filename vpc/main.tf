@@ -15,6 +15,7 @@ resource "aws_vpc" "main" {
   tags {
     Name = "Cinegy ${upper(var.environment_name)} VPC"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -27,6 +28,7 @@ resource "aws_eip" "nat_1a"
   tags {
     Name = "NAT GW 1a EIP"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -39,6 +41,7 @@ resource "aws_eip" "nat_1b"
   tags {
     Name = "NAT GW 1b EIP"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -49,6 +52,7 @@ resource "aws_internet_gateway" "gw" {
 
   tags {
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -63,6 +67,7 @@ resource "aws_nat_gateway" "nat_1a" {
   tags {
     Name = "NAT GW 1a"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -77,6 +82,7 @@ resource "aws_nat_gateway" "nat_1b" {
   tags {
     Name = "NAT GW 1b"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -95,6 +101,7 @@ resource "aws_route_table" "nat_gw_1a" {
   tags {
     Name = "Private 1a subnets via NAT GW 1a"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -118,6 +125,7 @@ resource "aws_route_table" "nat_gw_1b" {
   tags {
     Name = "Private 1b subnets via NAT GW 1b"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -145,6 +153,7 @@ resource "aws_subnet" "public_a" {
   tags {
     Name = "public_a"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
     Tier = "Public"
     AZ = "A"
@@ -160,6 +169,7 @@ resource "aws_subnet" "public_b" {
   tags {
     Name = "public_b"  
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
     Tier = "Public"
     AZ = "B"
@@ -175,6 +185,7 @@ resource "aws_subnet" "private_a" {
   tags {
     Name = "private_a"
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
     Tier = "Private"
     AZ = "A"
@@ -190,6 +201,7 @@ resource "aws_subnet" "private_b" {
   tags {
     Name = "private_b" 
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
     Tier = "Private"
     AZ = "B"
@@ -228,6 +240,7 @@ resource "aws_security_group" "remote_access" {
 
     tags {
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -257,6 +270,7 @@ resource "aws_security_group" "remote_access_ssh" {
 
     tags {
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
@@ -285,6 +299,7 @@ resource "aws_security_group" "open_internal" {
   
   tags {
     Env = "${var.environment_name}"
+    App = "${var.app_name}"
     Terraform = true
   }
 }
