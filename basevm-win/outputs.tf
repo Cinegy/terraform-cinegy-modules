@@ -11,3 +11,7 @@ output "instance_public_address" {
 output "instance_local_administrator_password" {
  value = "${rsadecrypt(aws_instance.vm.password_data,data.aws_secretsmanager_secret_version.privatekey.secret_string)}"
 }
+
+output "dns_address" {
+  value = "${aws_route53_record.vm.fqdn}"
+}
