@@ -20,18 +20,44 @@ resource "aws_iam_user" "terragrunt_ro" {
   }
 }
 
-resource "aws_iam_access_key" "terragrunt_ro" {
-  user = "${aws_iam_user.terragrunt_ro.name}"
-}
-
 resource "aws_iam_user_policy_attachment" "terragrunt_ro_ops_attachment" {
   user       = "${aws_iam_user.terragrunt_ro.name}"
   policy_arn = "${aws_iam_policy.terragrunt_ro_operations.arn}"
 }
 
-resource "aws_iam_user_policy_attachment" "terragrunt_core_ops_attachment" {
+resource "aws_iam_user_policy_attachment" "terragrunt_ro_core_ops_attachment" {
   user       = "${aws_iam_user.terragrunt_ro.name}"
   policy_arn = "${aws_iam_policy.terragrunt_core_operations.arn}"
+}
+
+resource "aws_iam_access_key" "terragrunt_ro" {
+  user = "${aws_iam_user.terragrunt_ro.name}"
+}
+
+
+resource "aws_iam_user" "terragrunt_admin" {
+  name = "terragrunt-${lower(var.app_name)}-admin"
+  path = "/terraform/"
+
+  tags {
+    Env = "${var.environment_name}"
+    App = "${var.app_name}"
+    Terraform = true
+  }
+}
+
+resource "aws_iam_user_policy_attachment" "terragrunt_admin_ops_attachment" {
+  user       = "${aws_iam_user.terragrunt_admin.name}"
+  policy_arn = "${aws_iam_policy.terragrunt_admin_operations.arn}"
+}
+
+resource "aws_iam_user_policy_attachment" "terragrunt_admin_core_ops_attachment" {
+  user       = "${aws_iam_user.terragrunt_admin.name}"
+  policy_arn = "${aws_iam_policy.terragrunt_core_operations.arn}"
+}
+
+resource "aws_iam_access_key" "terragrunt_admin" {
+  user = "${aws_iam_user.terragrunt_admin.name}"
 }
 
 data "aws_iam_policy_document" "terragrunt_core_operations" {
@@ -154,6 +180,19 @@ resource "aws_iam_policy" "terragrunt_ro_operations" {
 }
 EOF
 }
+
+data "aws_iam_policy_document" "terragrunt_admin_operations" {
+  statement {
+    actions = [ "s3:*" ]
+    resources = [ "*" ]
+  }
+}
+
+resource "aws_iam_policy" "terragrunt_admin_operations" {
+  name = "TerragruntAdminOperations"
+  policy = "${data.aws_iam_policy_document.terragrunt_admin_operations.json}"
+}
+
 
 resource "aws_iam_role" "iam_role_domain_join" {
   name = "IAM_ROLE_DOMAIN_JOIN-${var.environment_name}"
