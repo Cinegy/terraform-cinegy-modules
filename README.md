@@ -25,12 +25,12 @@ It's very early days, so this is rapidly evolving for Cinegy. However, main bene
 
 ## What do we use?
 
-We've been building against Terraform 0.11.10, which does all the heavy lifting. This references the AWS provider for terraform, but that's all managed internally by terraform. We then use our internal GitLab system to store configuration and modules (like this repo) and expect Terragrunt to help make this work in teams better.
+We've been building against Terraform 0.11.11, which does all the heavy lifting. This references the AWS provider for terraform, but that's all managed internally by terraform. We then use our internal GitLab system to store configuration and modules (like this repo) and expect Terragrunt to help make this work in teams better.
  
 
 The current curated list of versions you should be using to match the team working on master is:
-- Terraform v0.11.10 (core tool for actually doing work)
-- - https://releases.hashicorp.com/terraform/0.11.10/terraform_0.11.10_windows_amd64.zip
+- Terraform v0.11.11 (core tool for actually doing work)
+- - https://releases.hashicorp.com/terraform/0.11.11/terraform_0.11.11_windows_amd64.zip
 - Terragrunt v0.16.14 (wrapper to terraform, which provides provides easier team-working and templating from blueprint modules to deployments)
 - - https://github.com/gruntwork-io/terragrunt/releases/tag/v0.16.14
 - AWS Vault v4.4.1 (used to easily store encrypted secrets, and push AWS values into environment variables at runtime)
