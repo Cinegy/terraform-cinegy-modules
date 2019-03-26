@@ -13,6 +13,15 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
+data "terraform_remote_state" "iam" {
+  backend = "s3"
+  config {
+    bucket = "${var.state_bucket}"
+    region = "${var.state_region}"
+    key = "${var.environment_name}/iam/terraform.tfstate"
+  }
+}
+
 data "terraform_remote_state" "directoryservice" {
   backend = "s3"
   config {
@@ -122,7 +131,7 @@ resource "aws_instance" "vm" {
   ami = "${data.aws_ami.latest_windows.id}"
   key_name = "terraform-key-${var.environment_name}"
   instance_type = "${var.instance_type}"
-  iam_instance_profile = "${data.terraform_remote_state.directoryservice.instance_profile_domain_join_name}"
+  iam_instance_profile = "${data.terraform_remote_state.iam.instance_profile_domain_join_name}"
   subnet_id     = "${element(data.aws_subnet_ids.filtered_subnets.ids, count.index)}"
   get_password_data = true
   user_data = "${format("<powershell>%s</powershell>", data.template_file.userdatascript.rendered)}"
