@@ -1,60 +1,59 @@
 terraform {
   # The configuration for this backend will be filled in by Terragrunt
-  backend "s3" {}
-  required_version = ">= 0.11.11"
+  backend "s3" {
+  }
 }
 
 data "terraform_remote_state" "vpc" {
   backend = "s3"
-  config {
-    bucket = "${var.state_bucket}"
-    region = "${var.state_region}"
-    key = "${var.environment_name}/vpc/terraform.tfstate"
+  config = {
+    bucket = var.state_bucket
+    region = var.state_region
+    key    = "${var.environment_name}/vpc/terraform.tfstate"
   }
 }
 
 provider "aws" {
-  region     = "${var.aws_region}"
-  version = "~> 2.3"
+  region  = var.aws_region
+  version = "~> 2.33"
 }
 
 # Get any secrets needed for VM instancing
 data "aws_secretsmanager_secret" "domain_admin_password" {
-  arn = "${var.aws_secrets_domain_admin_password_arn}"
+  arn = var.aws_secrets_domain_admin_password_arn
 }
 
 data "aws_secretsmanager_secret_version" "domain_admin_password" {
-  secret_id = "${data.aws_secretsmanager_secret.domain_admin_password.id}"
+  secret_id = data.aws_secretsmanager_secret.domain_admin_password.id
 }
 
 resource "aws_directory_service_directory" "ad" {
-  name     = "${var.domain_name}"
-  password = "${data.aws_secretsmanager_secret_version.domain_admin_password.secret_string}"
-  edition  = "${var.directory_edition}"
-  type     = "MicrosoftAD"
+  name     = var.domain_name
+  password = data.aws_secretsmanager_secret_version.domain_admin_password.secret_string
+  edition  = var.directory_edition
+  type     = var.directory_type
 
   vpc_settings {
-    vpc_id     = "${data.terraform_remote_state.vpc.main_vpc}"
+    vpc_id = data.terraform_remote_state.vpc.outputs.main_vpc
     subnet_ids = [
-        "${data.terraform_remote_state.vpc.private_subnets.a}", 
-        "${data.terraform_remote_state.vpc.private_subnets.b}"
-        ]    
+      data.terraform_remote_state.vpc.outputs.private_subnets.a,
+      data.terraform_remote_state.vpc.outputs.private_subnets.b,
+    ]
   }
 
-  tags {
-    Name = "${upper(var.environment_name)}-Directory Service"
-    Env = "${var.environment_name}"
-    App = "${var.app_name}"
+  tags = {
+    Name      = "${upper(var.environment_name)}-Directory Service"
+    Env       = var.environment_name
+    App       = var.app_name
     Terraform = true
   }
 }
 
-
 resource "aws_ssm_document" "directory_service_default_doc" {
-	name  = "directory_service_default_docs-${var.environment_name}"
-	document_type = "Command"
+  name          = "directory_service_default_docs-${var.environment_name}"
+  document_type = "Command"
 
-	content = <<DOC
+  content = <<DOC
     {
             "schemaVersion": "1.0",
             "description": "Join an instance to a domain",
@@ -64,21 +63,23 @@ resource "aws_ssm_document" "directory_service_default_doc" {
                     "directoryId": "${aws_directory_service_directory.ad.id}",
                     "directoryName": "${var.domain_name}",
                     "dnsIpAddresses": [
-                        "${aws_directory_service_directory.ad.dns_ip_addresses[0]}",
-                        "${aws_directory_service_directory.ad.dns_ip_addresses[1]}"
+                        "${sort(aws_directory_service_directory.ad.dns_ip_addresses).0}",
+                        "${sort(aws_directory_service_directory.ad.dns_ip_addresses).1}"                    
                     ]
                 }
             }
             }
     }
-    DOC
+    
+DOC
 
 
-    tags {
-      Env = "${var.environment_name}"
-      App = "${var.app_name}"
-      Terraform = true
-    }
+  tags = {
+    Env = var.environment_name
+    App = var.app_name
+    Terraform = true
+  }
 
-	depends_on = ["aws_directory_service_directory.ad"]
+  depends_on = [aws_directory_service_directory.ad]
 }
+
