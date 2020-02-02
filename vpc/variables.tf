@@ -3,7 +3,7 @@ variable "environment_name" {
   description = "Name to used to label environment deployment, for example 'dev' or 'test-lk'."
 }
 
-variable "account_id" {
+variable "aws_account_id" {
   description = "AWS account ID, used when constructing ARNs for API Gateway."
 }
 
@@ -24,46 +24,8 @@ variable "app_name" {
   description = "Name to used to label application deployment, for example 'central' or 'air'."
 }
 
-variable "route53_zone_id" {
-  description = "Zone ID of the route 53 zone used to make entries (e.g. sysadmin DNS entries)"
-  default     = ""
-}
-
-variable "route53_zone_suffix" {
-  description = "Zone DNS suffix for public facing entries"
-}
-
-variable "aws_secrets_generic_account_password_arn" {
-  description = "ARN representing general password secret stored within AWS Secrets Manager"
-}
-
-variable "aws_secrets_domain_admin_password_arn" {
-  description = "ARN representing domain admin password key secret stored within AWS Secrets Manager"
-}
-
 variable "aws_secrets_privatekey_arn" {
   description = "ARN representing private PEM key secret stored within AWS Secrets Manager"
-}
-
-variable "shared_route53_zone_id" {
-  description = "Zone ID of the default shared route 53 zone used to make helper entries (e.g. sysadmin DNS entries)"
-  default     = ""
-}
-
-variable "dynamodb_table" {
-  description = "DynamoDB table used for controlling terragrunt locks"
-}
-
-variable "shared_route53_zone_suffix" {
-  description = "Zone DNS suffix for helper entries (e.g. sysadmin DNS entries)"
-}
-
-variable "domain_name" {
-  description = "Active Directory Domain Name"
-}
-
-variable "domain_default_computer_ou" {
-  description = "Default OU for new computer account creation"
 }
 
 variable "stage" {

@@ -6,7 +6,7 @@ terraform {
 
 provider "aws" {
   region  = var.aws_region
-  version = "~> 2.15"
+  version = "~> 2.47"
 }
 
 resource "aws_iam_user" "terragrunt_ro" {
@@ -89,7 +89,7 @@ data "aws_iam_policy_document" "terragrunt_core_operations" {
       "dynamodb:DescribeTable"
     ]
 
-    resources = ["arn:aws:dynamodb:${var.aws_region}:${var.account_id}:table/${var.dynamodb_table}"]
+    resources = ["arn:aws:dynamodb:${var.aws_region}:${var.aws_account_id}:table/${var.dynamodb_table}"]
   }
 
   //AWS secrets access to specific secrets, for loading sensitive values (USE CAUTION EDITING RESOURCES!)

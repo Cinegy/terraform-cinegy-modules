@@ -81,7 +81,7 @@ resource "aws_nat_gateway" "nat_1a" {
 
 # Create a 2nd NAT gateway for private subnets to use
 resource "aws_nat_gateway" "nat_1b" {
-  allocation_id = aws_eip.nat_1b.id
+  allocation_id = aws_eip.nat_1b[0].id
   subnet_id     = aws_subnet.public_b.id
   count = var.secondary_az_enabled ? 1 : 0
 
@@ -142,14 +142,14 @@ resource "aws_route_table" "nat_gw_1b" {
 # add a default route for nat_gw1b
 resource "aws_route" "default_gw_nat_gw1b" {
   count = var.secondary_az_enabled ? 1 : 0
-  route_table_id         = aws_route_table.nat_gw_1b.id
+  route_table_id         = aws_route_table.nat_gw_1b[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_1b.id
+  nat_gateway_id         = aws_nat_gateway.nat_1b[count.index].id
 }
 
 resource "aws_route_table_association" "private_b_subnet_to_nat_gw_1b" {
   count = var.secondary_az_enabled ? 1 : 0
-  route_table_id = aws_route_table.nat_gw_1b.id
+  route_table_id = aws_route_table.nat_gw_1b[count.index].id
   subnet_id      = aws_subnet.private_b.id
 }
 
@@ -172,7 +172,6 @@ resource "aws_subnet" "public_a" {
 
 # Availability Zone B - Publically accessible
 resource "aws_subnet" "public_b" {
-  count = var.secondary_az_enabled ? 1 : 0
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_b_subnet_cidr_block
   availability_zone       = "${var.aws_region}b"
@@ -205,7 +204,6 @@ resource "aws_subnet" "private_a" {
 
 # Availability Zone B - NOT Publically accessible
 resource "aws_subnet" "private_b" {
-  count = var.secondary_az_enabled ? 1 : 0
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.private_b_subnet_cidr_block
   availability_zone       = "${var.aws_region}b"
@@ -370,33 +368,34 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "logs" {
-role       = aws_iam_role.iam_for_logging.name
-policy_arn = aws_iam_policy.cloudwatch_logging.arn
+  role       = aws_iam_role.iam_for_logging.name
+  policy_arn = aws_iam_policy.cloudwatch_logging.arn
 }
 
 # Get PEM details from AWS secrets and create AWS public key registration for use by any VM instances
 data "aws_secretsmanager_secret" "privatekey" {
-arn = var.aws_secrets_privatekey_arn
+  arn = var.aws_secrets_privatekey_arn
 }
 
 data "aws_secretsmanager_secret_version" "privatekey" {
-secret_id = data.aws_secretsmanager_secret.privatekey.id
+  secret_id = data.aws_secretsmanager_secret.privatekey.id
 }
 
 data "tls_public_key" "terraform_key" {
-private_key_pem = data.aws_secretsmanager_secret_version.privatekey.secret_string
+  private_key_pem = data.aws_secretsmanager_secret_version.privatekey.secret_string
 }
 
 resource "aws_key_pair" "terraform_key" {
-key_name   = "terraform-key-${var.environment_name}"
-public_key = data.tls_public_key.terraform_key.public_key_openssh
+  key_name   = "terraform-key-${var.environment_name}"
+  public_key = data.tls_public_key.terraform_key.public_key_openssh
 }
 
 #store a file in the state bucket for use as a base Cinegy Agent manifest template 
-resource "aws_s3_bucket_object" "default_base_manifest" {
-bucket       = var.state_bucket
-key          = "${var.environment_name}/vpc/default_base_manifest.txt"
-source       = var.cinegy_agent_default_manifest_path
-content_type = "text/plain"
+  resource "aws_s3_bucket_object" "default_base_manifest" {
+  bucket       = var.state_bucket
+  key          = "${var.environment_name}/vpc/default_base_manifest.txt"
+  source       = var.cinegy_agent_default_manifest_path
+  content_type = "text/plain"  
+  server_side_encryption = "AES256"
 }
 
