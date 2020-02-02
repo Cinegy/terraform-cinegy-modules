@@ -25,6 +25,4 @@ aws-vault exec terragrunt-admin -- aws iam list-roles
 
 Then terraform is not going to work either!
 
-For more details, see here: https://99designs.co.uk/tech-blog/blog/2015/10/26/aws-vault/
-
-
+For more details, see here: <https://99designs.co.uk/tech-blog/blog/2015/10/26/aws-vault/>

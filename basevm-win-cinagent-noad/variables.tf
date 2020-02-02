@@ -12,20 +12,15 @@ variable "state_region" {
   default = "eu-west-1"
 }
 
+variable "global_state_bucket" {
+  description = "Name of bucket used to hold state for the global deployment."
+}
+
 variable "aws_region" {
   description = "AWS region to launch infrastructure within."
 }
 
-variable "app_name" {
-  description = "Name for labelling the deployment, for example 'sysadmin' or 'playout'"
-}
-
 # Module specific variables
-
-variable "amazon_owned_ami_name" {
-  description = "An AMI name (wildcards supported) for selecting the base image for the VM"
-  default = "Windows_Server-2016-English-Full-Base*"
-}
 
 variable "aws_secrets_privatekey_arn" {
   description = "ARN representing private key secret stored within AWS Secrets Manager"
@@ -81,9 +76,17 @@ variable "shared_route53_zone_suffix" {
   default = ""
 }
 
+variable "amazon_owned_ami_name" {
+  description = "An AMI name (wildcards supported) for selecting the base image for the VM"
+  default = "Windows_Server-2016-English-Full-Base*"
+}
+
+
 variable "user_data_script_extension" {
-  description = "Extended element to attach to core user data script. Default renames host to match metadata name tag."
+  description = "Extended element to attach to core user data script. Default installs Cinegy Agent with base elements and renames host to match metadata name tag."
   default = <<EOF
+  InstallAgent
+  AddDefaultPackages
   RenameHost
 EOF
 

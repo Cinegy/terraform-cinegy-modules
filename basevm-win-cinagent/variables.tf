@@ -3,13 +3,21 @@ variable "environment_name" {
   description = "Name to used to label environment deployment, for example 'dev' or 'test-lk'."
 }
 
+variable "account_id" {
+  description = "AWS account ID, used when constructing ARNs for API Gateway."
+}
+
 variable "state_bucket" {
   description = "Name of bucket used to hold state."
 }
 
 variable "state_region" {
   description = "Region associated with state bucket."
-  default = "eu-west-1"
+  default     = "eu-west-1"
+}
+
+variable "global_state_bucket" {
+  description = "Name of bucket used to hold state for the global deployment."
 }
 
 variable "aws_region" {
@@ -17,14 +25,20 @@ variable "aws_region" {
 }
 
 variable "app_name" {
-  description = "Name for labelling the deployment, for example 'sysadmin' or 'playout'"
+  description = "Name to used to label application deployment, for example 'central' or 'air'."
 }
 
-# Module specific variables
+variable "route53_zone_id" {
+  description = "Zone ID of the route 53 zone used to make entries (e.g. sysadmin DNS entries)"
+  default     = ""
+}
 
-variable "amazon_owned_ami_name" {
-  description = "An AMI name (wildcards supported) for selecting the base image for the VM"
-  default = "Windows_Server-2016-English-Full-Base*"
+variable "route53_zone_suffix" {
+  description = "Zone DNS suffix for public facing entries"
+}
+
+variable "aws_secrets_generic_account_password_arn" {
+  description = "ARN representing general password secret stored within AWS Secrets Manager"
 }
 
 variable "aws_secrets_domain_admin_password_arn" {
@@ -32,7 +46,32 @@ variable "aws_secrets_domain_admin_password_arn" {
 }
 
 variable "aws_secrets_privatekey_arn" {
-  description = "ARN representing private key secret stored within AWS Secrets Manager"
+  description = "ARN representing private PEM key secret stored within AWS Secrets Manager"
+}
+
+variable "shared_route53_zone_id" {
+  description = "Zone ID of the default shared route 53 zone used to make helper entries (e.g. sysadmin DNS entries)"
+  default     = ""
+}
+
+variable "dynamodb_table" {
+  description = "DynamoDB table used for controlling terragrunt locks"
+}
+
+variable "shared_route53_zone_suffix" {
+  description = "Zone DNS suffix for helper entries (e.g. sysadmin DNS entries)"
+}
+
+variable "stage" {
+  description = "Deployment stage label, e.g. blue or green"
+  default = "blue"
+}
+
+# Module specific variables
+
+variable "amazon_owned_ami_name" {
+  description = "An AMI name (wildcards supported) for selecting the base image for the VM"
+  default     = "Windows_Server-2016-English-Full-Base*"
 }
 
 variable "instance_type" {
@@ -57,45 +96,31 @@ variable "host_description" {
 
 variable "attach_data_volume" {
   description = "Attach a secondary data volume to the host (default false)"
-  default = false
+  default     = false
 }
 
 variable "data_volume_size" {
   description = "Size of any secondary data volume (default 30GB)"
-  default = "30"
+  default     = "30"
 }
 
 variable "allow_all_internal_traffic" {
   description = "Allow all internal network traffic (default false)"
-  default = false
+  default     = false
 }
 
 variable "create_external_dns_reference" {
   description = "Create a DNS entry for the public IP of the VM inside the default Route53 zone (default false)"
-  default = false
-}
-
-variable "shared_route53_zone_id" {
-  description = "Zone ID of the default shared route 53 zone used to make helper entries (e.g. sysadmin DNS entries)"
-  default = ""
-}
-
-variable "shared_route53_zone_suffix" {
-  description = "Suffix to append to Route 53 generated entries, should match the value defined inside the Route53 default zone (e.g. terraform.cinegy.net)"
-  default = ""
-}
-
-variable "aws_secrets_generic_account_password_arn" {
-  description = "ARN representing a key / value set of generic account names and passwords secrets stored within AWS Secrets Manager"
-  default = ""
+  default     = false
 }
 
 variable "user_data_script_extension" {
   description = "Extended element to attach to core user data script. Default installs Cinegy Agent with base elements and renames host to match metadata name tag."
-  default = <<EOF
+  default     = <<EOF
   InstallAgent
   AddDefaultPackages
   RenameHost
 EOF
 
 }
+

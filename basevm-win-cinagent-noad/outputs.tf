@@ -8,6 +8,13 @@ output "instance_hostname" {
 output "instance_public_address" {
   value = "${aws_instance.vm.public_ip}"
 }
+
+output "instance_private_address" {
+  value = "${aws_instance.vm.private_ip}"
+}
+
 output "instance_local_administrator_password" {
  value = "${rsadecrypt(aws_instance.vm.password_data,data.aws_secretsmanager_secret_version.privatekey.secret_string)}"
 }
+
+//todo: Output the created DNS alias if enabled
