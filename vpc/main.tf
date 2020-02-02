@@ -21,7 +21,7 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
 
   tags = {
-    Name      = "Cinegy ${var.app_name} ${upper(var.environment_name)} VPC"
+    Name      = "${var.app_name} ${upper(var.environment_name)} VPC"
     App       = var.app_name
     Env       = var.environment_name
     Terraform = true
@@ -43,7 +43,8 @@ resource "aws_eip" "nat_1a" {
 # Create an elastic IP for the NAT gateway
 resource "aws_eip" "nat_1b" {
   vpc = true
-
+  count = var.secondary_az_enabled ? 1 : 0
+  
   tags = {
     Name      = "NAT GW 1b EIP"
     Env       = var.environment_name
@@ -82,6 +83,7 @@ resource "aws_nat_gateway" "nat_1a" {
 resource "aws_nat_gateway" "nat_1b" {
   allocation_id = aws_eip.nat_1b.id
   subnet_id     = aws_subnet.public_b.id
+  count = var.secondary_az_enabled ? 1 : 0
 
   depends_on = [aws_internet_gateway.gw]
 
@@ -127,6 +129,7 @@ resource "aws_route_table_association" "private_a_subnet_to_nat_gw_1a" {
 # allow internet access to private subnets in AZ-B through nat #1b
 resource "aws_route_table" "nat_gw_1b" {
   vpc_id = aws_vpc.main.id
+  count = var.secondary_az_enabled ? 1 : 0
 
   tags = {
     Name      = "Private 1b subnets via NAT GW 1b"
@@ -138,12 +141,14 @@ resource "aws_route_table" "nat_gw_1b" {
 
 # add a default route for nat_gw1b
 resource "aws_route" "default_gw_nat_gw1b" {
+  count = var.secondary_az_enabled ? 1 : 0
   route_table_id         = aws_route_table.nat_gw_1b.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id         = aws_nat_gateway.nat_1b.id
 }
 
 resource "aws_route_table_association" "private_b_subnet_to_nat_gw_1b" {
+  count = var.secondary_az_enabled ? 1 : 0
   route_table_id = aws_route_table.nat_gw_1b.id
   subnet_id      = aws_subnet.private_b.id
 }
@@ -167,6 +172,7 @@ resource "aws_subnet" "public_a" {
 
 # Availability Zone B - Publically accessible
 resource "aws_subnet" "public_b" {
+  count = var.secondary_az_enabled ? 1 : 0
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_b_subnet_cidr_block
   availability_zone       = "${var.aws_region}b"
@@ -199,6 +205,7 @@ resource "aws_subnet" "private_a" {
 
 # Availability Zone B - NOT Publically accessible
 resource "aws_subnet" "private_b" {
+  count = var.secondary_az_enabled ? 1 : 0
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.private_b_subnet_cidr_block
   availability_zone       = "${var.aws_region}b"
