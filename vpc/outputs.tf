@@ -24,6 +24,10 @@ output "remote_access_security_group" {
   value = aws_security_group.remote_access.id
 }
 
+output "remote_ssh_security_group" {
+  value = aws_security_group.remote_access_ssh.id
+}
+
 output "open_internal_access_security_group" {
   value = aws_security_group.open_internal.id
 }
