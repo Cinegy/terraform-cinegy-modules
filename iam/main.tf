@@ -202,6 +202,26 @@ resource "aws_iam_policy" "terragrunt_admin_operations" {
   policy = data.aws_iam_policy_document.terragrunt_admin_operations.json
 }
 
+
+resource "aws_iam_role" "iam_role_es_admin" {
+  name = "IAM_ROLE_ES_ADMIN-${var.app_name}-${var.environment_name}"
+  path = "/"
+
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "es:*",
+            "Principal": "*",
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+EOF
+}
+
 /*
 resource "aws_iam_role" "iam_role_domain_join" {
   name = "IAM_ROLE_DOMAIN_JOIN-${var.app_name}-${var.environment_name}"

@@ -37,17 +37,22 @@ resource "aws_elasticsearch_domain" "mediamanor" {
 
 
 resource "aws_elasticsearch_domain_policy" "main" {
-  domain_name = "${aws_elasticsearch_domain.mediamanor.domain_name}"
+  domain_name = aws_elasticsearch_domain.mediamanor.domain_name
 
   access_policies = <<POLICIES
 {
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Action": "es:*",
-            "Principal": "*",
-            "Effect": "Allow",
-            "Resource": "${aws_elasticsearch_domain.mediamanor.arn}/*"
+          "Action": "es:*",
+          "Principal": "*",
+          "Effect": "Allow",
+          "Resource": "${aws_elasticsearch_domain.mediamanor.arn}/*",
+          "Condition": {
+            "IpAddress": {
+              "aws:SourceIp": "127.0.0.0/24"
+            }
+          }
         }
     ]
 }
