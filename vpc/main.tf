@@ -386,7 +386,7 @@ data "tls_public_key" "terraform_key" {
 }
 
 resource "aws_key_pair" "terraform_key" {
-  key_name   = "terraform-key-${var.environment_name}"
+  key_name   = "terraform-key-${var.app_name}-${var.environment_name}"
   public_key = data.tls_public_key.terraform_key.public_key_openssh
 }
 

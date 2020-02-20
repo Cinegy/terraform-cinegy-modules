@@ -5,6 +5,7 @@ terraform {
   required_version = ">= 0.12.2"
 }
 
+/*
 data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
@@ -13,6 +14,7 @@ data "terraform_remote_state" "vpc" {
     key    = "${var.environment_name}/vpc/terraform.tfstate"
   }
 }
+*/
 
 provider "aws" {
   region  = var.aws_region
@@ -41,7 +43,7 @@ resource "aws_security_group" "es" {
 
 }*/
 
-resource "aws_elasticsearch_domain" "mediamanor" {
+resource "aws_elasticsearch_domain" "elasticsearch" {
   domain_name           = var.es_domain_name
   elasticsearch_version = var.es_version
 
@@ -77,7 +79,7 @@ resource "aws_elasticsearch_domain" "mediamanor" {
 /*
 
 resource "aws_elasticsearch_domain_policy" "main" {
-  domain_name = aws_elasticsearch_domain.mediamanor.domain_name
+  domain_name = aws_elasticsearch_domain.elasticsearch.domain_name
 
   access_policies = <<POLICIES
 {
@@ -87,7 +89,7 @@ resource "aws_elasticsearch_domain_policy" "main" {
           "Action": "es:*",
           "Principal": "*",
           "Effect": "Allow",
-          "Resource": "${aws_elasticsearch_domain.mediamanor.arn}/*",
+          "Resource": "${aws_elasticsearch_domain.elasticsearch.arn}/*",
           "Condition": {
             "IpAddress": {
               "aws:SourceIp": "127.0.0.0/24"

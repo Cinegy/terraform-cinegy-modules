@@ -202,7 +202,53 @@ resource "aws_iam_policy" "terragrunt_admin_operations" {
   policy = data.aws_iam_policy_document.terragrunt_admin_operations.json
 }
 
+resource "aws_iam_role" "iam_role_default_ec2_instance" {
+  name = "IAM_ROLE_DEFAULT_EC2_INSTANCE-${var.app_name}-${var.environment_name}"
+  path = "/"
 
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+               "Service": "ec2.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+EOF
+
+}
+
+resource "aws_iam_instance_profile" "instance_profile_default_ec2_instance" {
+  name = "INSTANCE_PROFILE_DEFAULT_EC2-${var.app_name}-${var.environment_name}"
+  role = aws_iam_role.iam_role_default_ec2_instance.name
+}
+
+data "aws_iam_policy_document" "ec2_bucket_access" {
+  statement {
+    actions = [
+      "ec2:DescribeInstanceStatus",
+      "ec2:DescribeInstances",
+      "ec2:DescribeTags",
+      "s3:ListBucket",
+      "s3:GetObject",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "policy_allow_all_ssm" {
+  name = "IAM_POLICY_ALLOW_ALL_BUCKET_ACCESS-${var.app_name}-${var.environment_name}"
+  role = aws_iam_role.iam_role_default_ec2_instance.id
+  policy = data.aws_iam_policy_document.ec2_bucket_access.json
+}
+
+/*
 resource "aws_iam_role" "iam_role_es_admin" {
   name = "IAM_ROLE_ES_ADMIN-${var.app_name}-${var.environment_name}"
   path = "/"
@@ -221,6 +267,7 @@ resource "aws_iam_role" "iam_role_es_admin" {
 }
 EOF
 }
+*/
 
 /*
 resource "aws_iam_role" "iam_role_domain_join" {

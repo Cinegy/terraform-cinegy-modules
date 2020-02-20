@@ -3,6 +3,10 @@ variable "environment_name" {
   description = "Name to used to label environment deployment, for example 'dev' or 'test-lk'."
 }
 
+variable "app_name" {
+  description = "Name to used to label application deployment, for example 'central' or 'air'."
+}
+
 variable "state_bucket" {
   description = "Name of bucket used to hold state."
 }

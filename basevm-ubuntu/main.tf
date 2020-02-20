@@ -69,7 +69,7 @@ resource "aws_network_interface_sg_attachment" "open_access" {
 
 resource "aws_instance" "vm" {
   ami           = var.aws_amis[var.aws_region]
-  key_name      = "terraform-key-${var.environment_name}"
+  key_name      = "terraform-key-${var.app_name}-${var.environment_name}"
   instance_type = var.instance_type
   subnet_id     = element(tolist(data.aws_subnet_ids.filtered_subnets.ids),0)
   user_data     = file(var.userdata_script_path)
